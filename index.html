@@ -1,1 +1,1124 @@
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMD BINGO</title>
+<style>
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #fff8fc;
+  color: #352732;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Helvetica Neue",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    sans-serif;
+}
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+}
+.hidden {
+  display: none !important;
+}
+.container {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 24px 14px 50px;
+  text-align: center;
+}
+h1 {
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: 2px;
+}
+.subtitle {
+  margin: 6px 0 22px;
+  color: #927888;
+  font-size: 14px;
+}
+/* =====================================
+   MEMBER SELECT
+===================================== */
+#selectScreen {
+  width: 100%;
+}
+.select-count {
+  margin: 10px 0 15px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #d66c9d;
+}
+.member-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.member-choice {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #efd9e5;
+  border-radius: 10px;
+  background: white;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+}
+.member-choice img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.member-choice-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 2px;
+  background: rgba(255,255,255,0.9);
+  font-size: 10px;
+  font-weight: bold;
+}
+.member-choice.selected {
+  border: 4px solid #f28bb9;
+}
+.member-choice.selected::after {
+  content: "🩷";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: 25px;
+}
+.member-choice.disabled {
+  opacity: 0.4;
+}
+.start-button {
+  padding: 15px 42px;
+  border-radius: 30px;
+  background: #e697bd;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 5px 14px rgba(190,100,145,0.25);
+}
+.start-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+/* =====================================
+   GAME
+===================================== */
+#gameScreen {
+  width: 100%;
+}
+/* =====================================
+   QUIZ AREA
+===================================== */
+.draw-area {
+  margin-top: 15px;
+}
+.result-box {
+  width: 100%;
+  max-width: 520px;
+  min-height: 260px;
+  margin: 0 auto 15px;
+  padding: 25px 18px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 5px 18px rgba(80,50,70,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quiz-text {
+  font-size: clamp(24px, 7vw, 38px);
+  font-weight: bold;
+  line-height: 1.45;
+  color: #352732;
+}
+/* 抽選中 */
+.result-box.rolling {
+  animation: rollingShake 0.08s infinite alternate;
+}
+@keyframes rollingShake {
+  0% {
+    transform: rotate(-1deg) scale(0.99);
+  }
+  100% {
+    transform: rotate(1deg) scale(1.01);
+  }
+}
+.result-message {
+  min-height: 35px;
+  margin: 10px 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+.correct {
+  color: #df649b;
+}
+.wrong {
+  color: #9b8190;
+}
+/* =====================================
+   BINGO CARD
+===================================== */
+.bingo-card {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+}
+.bingo-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 10px;
+  background: white;
+  border: 2px solid #efd9e5;
+  box-shadow: 0 2px 7px rgba(80,50,70,0.08);
+  cursor: pointer;
+}
+.bingo-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bingo-cell-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 2px;
+  background: rgba(255,255,255,0.9);
+  font-size: 10px;
+  font-weight: bold;
+}
+.bingo-cell.opened {
+  background: #ffd7e9;
+}
+.bingo-cell.opened img,
+.bingo-cell.opened .bingo-cell-name {
+  opacity: 0;
+}
+.bingo-cell.opened::after {
+  content: "🩷";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(35px, 11vw, 65px);
+}
+/* =====================================
+   BUTTONS
+===================================== */
+.draw-button {
+  padding: 15px 40px;
+  border-radius: 30px;
+  background: #9d7bd1;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(100,70,150,0.2);
+}
+.draw-button:active {
+  transform: scale(0.96);
+}
+.draw-button:disabled {
+  opacity: 0.5;
+}
+.reset-button {
+  margin-top: 12px;
+  padding: 9px 20px;
+  border-radius: 20px;
+  background: #eee5eb;
+  color: #756370;
+}
+/* =====================================
+   BINGO MESSAGE
+===================================== */
+.bingo-message {
+  color: #e05294;
+  font-size: 30px;
+  animation: bingoPop 0.5s ease;
+}
+@keyframes bingoPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* =====================================
+   MOBILE
+===================================== */
+@media (max-width: 420px) {
+  .container {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+  .member-list {
+    gap: 5px;
+  }
+  .member-choice-name,
+  .bingo-cell-name {
+    font-size: 8px;
+  }
+  .bingo-card {
+    gap: 4px;
+  }
+  .result-box {
+    min-height: 230px;
+    padding: 20px 12px;
+  }
+  .quiz-text {
+    font-size: clamp(23px, 7vw, 32px);
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>♡ DMD BINGO ♡</h1>
+  <p class="subtitle">
+    好きな16人を選んでBINGOしよう！
+  </p>
+  <!-- =====================================
+       MEMBER SELECT
+  ====================================== -->
+  <div id="selectScreen">
+<div class="select-count">
+  選択中：<span id="selectedCount">0</span> / 16
+</div>
+<div id="memberList" class="member-list"></div>
+<button
+  id="startButton"
+  class="start-button"
+  disabled
+>
+  BINGO START
+</button>
+  </div>
+  <!-- =====================================
+       GAME
+  ====================================== -->
+  <div id="gameScreen" class="hidden">
+<div class="draw-area">
+  <div
+    id="resultBox"
+    class="result-box"
+  >
+    <div
+      id="quizText"
+      class="quiz-text"
+    >
+      クイズを出してね♡
+    </div>
+  </div>
+  <div
+    id="resultMessage"
+    class="result-message"
+  ></div>
+  <button
+    id="drawButton"
+    class="draw-button"
+  >
+    クイズを出す！
+  </button>
+  <br>
+  <button
+    id="resetButton"
+    class="reset-button"
+  >
+    最初からやり直す
+  </button>
+</div>
+<div
+  id="bingoCard"
+  class="bingo-card"
+></div>
+  </div>
+</div>
+<script>
+/* =====================================================
+   DMD MEMBERS
+   写真ファイル名の .jpg 前がそのまま名前
+   birth = 生年月日
+   height = 身長(cm)
+   ※ Nan / Nick は公開プロフィールで
+      確認できるデータが不足しているため null
+===================================================== */
+const members = [
+  { name: "Auau", image: "Auau.jpg", birth: "2002-03-08", height: 180 },
+  { name: "Copper", image: "Copper.jpg", birth: "2003-09-16", height: 180 },
+  { name: "FIFA", image: "FIFA.jpg", birth: "2006-06-06", height: 176 },
+  { name: "Few", image: "Few.jpg", birth: "2004-12-08", height: 180 },
+  { name: "Firstone", image: "Firstone.jpg", birth: "2000-08-01", height: 177 },
+  { name: "Gems", image: "Gems.jpg", birth: "2004-01-02", height: 170 },
+  { name: "JJ", image: "JJ.jpg", birth: "2000-06-24", height: 176 },
+  { name: "JT", image: "JT.jpg", birth: "2000-08-29", height: 190 },
+  { name: "James", image: "James.jpg", birth: "1999-02-11", height: 179 },
+  { name: "Jimmy", image: "Jimmy.jpg", birth: "2000-02-18", height: 196 },
+  { name: "Keng", image: "Keng.jpg", birth: "1999-08-19", height: 180 },
+  { name: "Kim", image: "Kim.jpg", birth: "1996-10-01", height: 176 },
+  { name: "Kong", image: "Kong.jpg", birth: "2003-12-18", height: 178 },
+  { name: "Latte", image: "Latte.jpg", birth: "2000-09-30", height: 176 },
+  { name: "Mark", image: "Mark.jpg", birth: "1992-03-09", height: 179 },
+  { name: "Max", image: "Max.jpg", birth: "1993-10-25", height: 182 },
+  { name: "Namping", image: "Namping.jpg", birth: "2001-02-17", height: 180 },
+  { name: "Nan", image: "Nan.jpg", birth: null, height: null },
+  { name: "Nat", image: "Nat.jpg", birth: "2002-08-08", height: 167 },
+  { name: "Net", image: "Net.jpg", birth: "1997-07-08", height: 176 },
+  { name: "Nick", image: "Nick.jpg", birth: null, height: null },
+  { name: "North", image: "North.jpg", birth: "2005-02-10", height: 185 },
+  { name: "Nunew", image: "Nunew.jpg", birth: "2001-07-25", height: 173 },
+  { name: "Ohm", image: "Ohm.jpg", birth: "2001-04-09", height: 184 },
+  { name: "Otto", image: "Otto.jpg", birth: "2005-01-25", height: 180 },
+  { name: "Park", image: "Park.jpg", birth: "1992-08-23", height: 174 },
+  { name: "Patji", image: "Patji.jpg", birth: "2007-08-12", height: 174 },
+  { name: "Pete", image: "Pete.jpg", birth: "2008-03-02", height: 183 },
+  { name: "Phupha", image: "Phupha.jpg", birth: "2003-09-01", height: 180 },
+  { name: "Poppy", image: "Poppy.jpg", birth: "1994-03-26", height: 177 },
+  { name: "Por", image: "Por.jpg", birth: "2002-10-17", height: 175 },
+  { name: "Porshe", image: "Porshe.jpg", birth: "1995-11-30", height: 175 },
+  { name: "Pung", image: "Pung.jpg", birth: "2004-06-09", height: 180 },
+  { name: "Reeonn", image: "Reeonn.jpg", birth: "2007-01-22", height: 175 },
+  { name: "Ryujin", image: "Ryujin.jpg", birth: "2006-01-10", height: 180 },
+  { name: "Save", image: "Save.jpg", birth: "2003-06-27", height: 174 },
+  { name: "Teddy", image: "Teddy.jpg", birth: "2006-03-23", height: 176 },
+  { name: "Teeter", image: "Teeter.jpg", birth: "2005-03-29", height: 180 },
+  { name: "Thomas", image: "Thomas.jpg", birth: "2001-04-09", height: 177 },
+  { name: "Tle", image: "Tle.jpg", birth: "1998-09-13", height: 175 },
+  { name: "Tommy", image: "Tommy.jpg", birth: "1995-09-29", height: 174 },
+  { name: "Ton", image: "Ton.jpg", birth: "1998-10-22", height: 182 },
+  { name: "Tutor", image: "Tutor.jpg", birth: "2000-09-04", height: 180 },
+  { name: "Wave", image: "Wave.jpg", birth: "2006-10-29", height: 177 },
+  { name: "Yim", image: "Yim.jpg", birth: "2000-06-18", height: 177 },
+  { name: "Zee", image: "Zee.jpg", birth: "1992-09-10", height: 182 }
+];
+/* =====================================================
+   VARIABLES
+===================================================== */
+let selectedMembers = [];
+let cardMembers = [];
+let currentQuiz = null;
+let quizTimer = null;
+let quizHistory = [];
+let bingoFinished = false;
+/* =====================================================
+   ELEMENTS
+===================================================== */
+const memberList =
+  document.getElementById("memberList");
+const selectedCount =
+  document.getElementById("selectedCount");
+const startButton =
+  document.getElementById("startButton");
+const selectScreen =
+  document.getElementById("selectScreen");
+const gameScreen =
+  document.getElementById("gameScreen");
+const bingoCard =
+  document.getElementById("bingoCard");
+const drawButton =
+  document.getElementById("drawButton");
+const resetButton =
+  document.getElementById("resetButton");
+const quizText =
+  document.getElementById("quizText");
+const resultMessage =
+  document.getElementById("resultMessage");
+const resultBox =
+  document.getElementById("resultBox");
+/* =====================================================
+   SHUFFLE
+===================================================== */
+function shuffle(array) {
+  const result = [...array];
+  for (
+    let i = result.length - 1;
+    i > 0;
+    i--
+  ) {
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+    [
+      result[i],
+      result[j]
+    ] =
+    [
+      result[j],
+      result[i]
+    ];
+  }
+  return result;
+}
+/* =====================================================
+   MEMBER SELECTION
+===================================================== */
+function createMemberList() {
+  memberList.innerHTML = "";
+  members.forEach(member => {
+    const button =
+      document.createElement("button");
+    button.className =
+      "member-choice";
+    button.innerHTML = `
+      <img
+        src="${member.image}"
+        alt="${member.name}"
+        onerror="this.style.display='none';"
+      >
+      <div class="member-choice-name">
+        ${member.name}
+      </div>
+    `;
+    button.addEventListener(
+      "click",
+      () => {
+        const alreadySelected =
+          selectedMembers.some(
+            selected =>
+              selected.name === member.name
+          );
+        if (alreadySelected) {
+          selectedMembers =
+            selectedMembers.filter(
+              selected =>
+                selected.name !== member.name
+            );
+          button.classList.remove(
+            "selected"
+          );
+        }
+        else {
+          if (
+            selectedMembers.length >= 16
+          ) {
+            return;
+          }
+          selectedMembers.push(member);
+          button.classList.add(
+            "selected"
+          );
+        }
+        updateSelection();
+      }
+    );
+    memberList.appendChild(button);
+  });
+}
+/* =====================================================
+   UPDATE SELECTION
+===================================================== */
+function updateSelection() {
+  selectedCount.textContent =
+    selectedMembers.length;
+  startButton.disabled =
+    selectedMembers.length !== 16;
+  const buttons =
+    document.querySelectorAll(
+      ".member-choice"
+    );
+  buttons.forEach(button => {
+    const isSelected =
+      button.classList.contains(
+        "selected"
+      );
+    if (
+      selectedMembers.length >= 16 &&
+      !isSelected
+    ) {
+      button.classList.add(
+        "disabled"
+      );
+    }
+    else {
+      button.classList.remove(
+        "disabled"
+      );
+    }
+  });
+}
+/* =====================================================
+   START GAME
+===================================================== */
+startButton.addEventListener(
+  "click",
+  startGame
+);
+function startGame() {
+  if (
+    selectedMembers.length !== 16
+  ) {
+    return;
+  }
+  selectScreen.classList.add(
+    "hidden"
+  );
+  gameScreen.classList.remove(
+    "hidden"
+  );
+  cardMembers =
+    shuffle(selectedMembers);
+  currentQuiz = null;
+  quizHistory = [];
+  bingoFinished = false;
+  quizText.textContent =
+    "クイズを出してね♡";
+  resultMessage.textContent =
+    "";
+  drawButton.disabled =
+    false;
+  createBingoCard();
+}
+/* =====================================================
+   CREATE BINGO CARD
+===================================================== */
+function createBingoCard() {
+  bingoCard.innerHTML = "";
+  cardMembers.forEach(member => {
+    const cell =
+      document.createElement("div");
+    cell.className =
+      "bingo-cell";
+    cell.dataset.name =
+      member.name;
+    cell.dataset.canAnswer =
+      "false";
+    cell.innerHTML = `
+      <img
+        src="${member.image}"
+        alt="${member.name}"
+        onerror="this.style.display='none';"
+      >
+      <div class="bingo-cell-name">
+        ${member.name}
+      </div>
+    `;
+    cell.addEventListener(
+      "click",
+      () => {
+        if (
+          cell.classList.contains(
+            "opened"
+          )
+        ) {
+          return;
+        }
+        if (
+          cell.dataset.canAnswer !== "true"
+        ) {
+          return;
+        }
+        answerQuiz(
+          member.name
+        );
+      }
+    );
+    bingoCard.appendChild(cell);
+  });
+}
+/* =====================================================
+   QUIZ TYPES
+===================================================== */
+const quizTypes = [
+  "tallest",
+  "oldest",
+  "youngest",
+  "birthMonth"
+];
+/* =====================================================
+   QUIZ GENERATION
+===================================================== */
+function makeQuiz() {
+  const possibleTypes =
+    shuffle(quizTypes);
+  for (
+    const type of possibleTypes
+  ) {
+    const quiz =
+      createQuizByType(type);
+    if (quiz !== null) {
+      return quiz;
+    }
+  }
+  return null;
+}
+/* =====================================================
+   CREATE QUIZ BY TYPE
+===================================================== */
+function createQuizByType(type) {
+  const usableBirthMembers =
+    cardMembers.filter(
+      member =>
+        member.birth !== null
+    );
+  const usableHeightMembers =
+    cardMembers.filter(
+      member =>
+        member.height !== null
+    );
+  /* ================================
+     身長
+  ================================= */
+  if (
+    type === "tallest"
+  ) {
+    if (
+      usableHeightMembers.length !==
+      cardMembers.length
+    ) {
+      return null;
+    }
+    const maxHeight =
+      Math.max(
+        ...cardMembers.map(
+          member =>
+            member.height
+        )
+      );
+    const answers =
+      cardMembers
+        .filter(
+          member =>
+            member.height === maxHeight
+        )
+        .map(
+          member =>
+            member.name
+        );
+    return {
+      text:
+        "この16人の中で<br>一番身長が高いのは？",
+      answers:
+        answers
+    };
+  }
+  /* ================================
+     最年長
+  ================================= */
+  if (
+    type === "oldest"
+  ) {
+    if (
+      usableBirthMembers.length !==
+      cardMembers.length
+    ) {
+      return null;
+    }
+    const oldestDate =
+      Math.min(
+        ...cardMembers.map(
+          member =>
+            new Date(member.birth).getTime()
+        )
+      );
+    const answers =
+      cardMembers
+        .filter(
+          member =>
+            new Date(member.birth).getTime() ===
+            oldestDate
+        )
+        .map(
+          member =>
+            member.name
+        );
+    return {
+      text:
+        "この16人の中で<br>一番年上なのは？",
+      answers:
+        answers
+    };
+  }
+  /* ================================
+     最年少
+  ================================= */
+  if (
+    type === "youngest"
+  ) {
+    if (
+      usableBirthMembers.length !==
+      cardMembers.length
+    ) {
+      return null;
+    }
+    const youngestDate =
+      Math.max(
+        ...cardMembers.map(
+          member =>
+            new Date(member.birth).getTime()
+        )
+      );
+    const answers =
+      cardMembers
+        .filter(
+          member =>
+            new Date(member.birth).getTime() ===
+            youngestDate
+        )
+        .map(
+          member =>
+            member.name
+        );
+    return {
+      text:
+        "この16人の中で<br>一番年下なのは？",
+      answers:
+        answers
+    };
+  }
+  /* ================================
+     誕生月
+  ================================= */
+  if (
+    type === "birthMonth"
+  ) {
+    if (
+      usableBirthMembers.length !==
+      cardMembers.length
+    ) {
+      return null;
+    }
+    const months = [
+      ...new Set(
+        cardMembers.map(
+          member =>
+            new Date(member.birth)
+              .getMonth() + 1
+        )
+      )
+    ];
+    if (
+      months.length === 0
+    ) {
+      return null;
+    }
+    const month =
+      months[
+        Math.floor(
+          Math.random() *
+          months.length
+        )
+      ];
+    const answers =
+      cardMembers
+        .filter(
+          member =>
+            new Date(member.birth)
+              .getMonth() + 1 ===
+            month
+        )
+        .map(
+          member =>
+            member.name
+        );
+    return {
+      text:
+        `この16人の中で<br>${month}月生まれなのは？`,
+      answers:
+        answers
+    };
+  }
+  return null;
+}
+/* =====================================================
+   DRAW QUIZ
+===================================================== */
+drawButton.addEventListener(
+  "click",
+  drawQuiz
+);
+function drawQuiz() {
+  if (
+    quizTimer !== null
+  ) {
+    return;
+  }
+  if (
+    bingoFinished
+  ) {
+    return;
+  }
+  drawButton.disabled =
+    true;
+  resultMessage.textContent =
+    "";
+  resultMessage.className =
+    "result-message";
+  resultBox.classList.add(
+    "rolling"
+  );
+  /*
+    新しいクイズを作る
+  */
+  let finalQuiz =
+    makeQuiz();
+  /*
+    もしデータ不足でクイズが作れない場合
+  */
+  if (
+    finalQuiz === null
+  ) {
+    resultBox.classList.remove(
+      "rolling"
+    );
+    quizText.innerHTML =
+      "この16人では<br>出題できるクイズがありません🥹";
+    resultMessage.textContent =
+      "最初からやり直してメンバーを選び直してね";
+    drawButton.disabled =
+      false;
+    return;
+  }
+  currentQuiz =
+    finalQuiz;
+  /*
+    ドゥルルルルルル！！！
+    クイズを高速表示
+  */
+  let count = 0;
+  const maxCount = 25;
+  quizTimer =
+    setInterval(
+      () => {
+        const temporaryQuiz =
+          makeQuiz();
+        if (
+          temporaryQuiz !== null
+        ) {
+          quizText.innerHTML =
+            temporaryQuiz.text;
+        }
+        count++;
+        if (
+          count >= maxCount
+        ) {
+          clearInterval(
+            quizTimer
+          );
+          quizTimer =
+            null;
+          resultBox.classList.remove(
+            "rolling"
+          );
+          /*
+            最後に正式なクイズを表示
+          */
+          quizText.innerHTML =
+            currentQuiz.text;
+          enableAnswers();
+        }
+      },
+      75
+    );
+}
+/* =====================================================
+   ENABLE ANSWERS
+===================================================== */
+function enableAnswers() {
+  const cells =
+    [
+      ...document.querySelectorAll(
+        ".bingo-cell"
+      )
+    ];
+  cells.forEach(cell => {
+    if (
+      !cell.classList.contains(
+        "opened"
+      )
+    ) {
+      cell.dataset.canAnswer =
+        "true";
+    }
+  });
+  resultMessage.textContent =
+    "答えだと思う人をタップ！";
+  resultMessage.className =
+    "result-message";
+}
+/* =====================================================
+   ANSWER QUIZ
+===================================================== */
+function answerQuiz(
+  selectedName
+) {
+  if (
+    currentQuiz === null
+  ) {
+    return;
+  }
+  /*
+    正解
+  */
+  if (
+    currentQuiz.answers.includes(
+      selectedName
+    )
+  ) {
+    const cell =
+      [...document.querySelectorAll(
+        ".bingo-cell"
+      )].find(
+        cell =>
+          cell.dataset.name ===
+          selectedName
+      );
+    if (cell) {
+      cell.classList.add(
+        "opened"
+      );
+      cell.dataset.canAnswer =
+        "false";
+    }
+    /*
+      他のマスも回答できないようにする
+    */
+    document
+      .querySelectorAll(
+        ".bingo-cell"
+      )
+      .forEach(
+        cell => {
+          cell.dataset.canAnswer =
+            "false";
+        }
+      );
+    resultMessage.innerHTML =
+      "🎉 正解！！ 🎉";
+    resultMessage.className =
+      "result-message correct";
+    drawButton.disabled =
+      false;
+    currentQuiz =
+      null;
+    checkBingo();
+  }
+  /*
+    不正解
+  */
+  else {
+    resultMessage.textContent =
+      "🥹 ざんねん！もう一度選んでね";
+    resultMessage.className =
+      "result-message wrong";
+  }
+}
+/* =====================================================
+   CHECK BINGO
+===================================================== */
+function checkBingo() {
+  const cells =
+    [...document.querySelectorAll(
+      ".bingo-cell"
+    )];
+  const opened =
+    cells.map(
+      cell =>
+        cell.classList.contains(
+          "opened"
+        )
+    );
+  const lines = [
+    [0,1,2,3],
+    [4,5,6,7],
+    [8,9,10,11],
+    [12,13,14,15],
+    [0,4,8,12],
+    [1,5,9,13],
+    [2,6,10,14],
+    [3,7,11,15],
+    [0,5,10,15],
+    [3,6,9,12]
+  ];
+  const bingo =
+    lines.some(
+      line =>
+        line.every(
+          index =>
+            opened[index]
+        )
+    );
+  if (bingo) {
+    bingoFinished =
+      true;
+    resultMessage.innerHTML =
+      "🎉 BINGO!! 🎉";
+    resultMessage.className =
+      "result-message bingo-message";
+    drawButton.disabled =
+      true;
+  }
+}
+/* =====================================================
+   RESET
+===================================================== */
+resetButton.addEventListener(
+  "click",
+  resetGame
+);
+function resetGame() {
+  if (
+    quizTimer !== null
+  ) {
+    clearInterval(
+      quizTimer
+    );
+    quizTimer =
+      null;
+  }
+  resultBox.classList.remove(
+    "rolling"
+  );
+  selectedMembers = [];
+  cardMembers = [];
+  currentQuiz = null;
+  quizHistory = [];
+  bingoFinished = false;
+  gameScreen.classList.add(
+    "hidden"
+  );
+  selectScreen.classList.remove(
+    "hidden"
+  );
+  quizText.textContent =
+    "クイズを出してね♡";
+  resultMessage.textContent =
+    "";
+  drawButton.disabled =
+    false;
+  createMemberList();
+  updateSelection();
+}
+/* =====================================================
+   INITIALIZE
+===================================================== */
+createMemberList();
+updateSelection();
+</script>
+</body>
+</html>
