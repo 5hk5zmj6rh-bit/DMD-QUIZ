@@ -308,6 +308,9 @@ font-size: clamp(23px, 7vw, 32px);
   <p class="subtitle">
     好きな16人を選んでBINGOしよう！
   </p>
+  <!-- =====================================
+       MEMBER SELECT
+  ====================================== -->
   <div id="selectScreen">
 <div class="select-count">
   選択中：<span id="selectedCount">0</span> / 16
@@ -321,6 +324,9 @@ font-size: clamp(23px, 7vw, 32px);
   BINGO START
 </button>
   </div>
+  <!-- =====================================
+       GAME
+  ====================================== -->
   <div id="gameScreen" class="hidden">
 <div class="draw-area">
   <div
@@ -360,10 +366,16 @@ font-size: clamp(23px, 7vw, 32px);
 </div>
 <script>
 /* =====================================================
+   IMAGE PATH
+   スペースなどを含むGitHubファイル名を安全に読み込む
+===================================================== */
+function imagePath(filename) {
+  return encodeURI(filename);
+}
+/* =====================================================
    DMD MEMBERS
-   実際のGitHub上のファイル名に合わせています。
+   GitHub上の実際のファイル名に合わせています。
    IMG_8694.jpg は使用しません。
-   Teetee は画像ファイル Teeter.jpg を使用します。
 ===================================================== */
 const members = [
   { name: "Auau", image: "Auau.jpg", birth: "2002-03-08", height: 180 },
@@ -371,7 +383,7 @@ const members = [
   { name: "FIFA", image: "FIFA.jpg", birth: "2006-06-06", height: 176 },
   { name: "Few", image: "Few.jpg", birth: "2004-12-08", height: 180 },
   { name: "Firstone", image: "Firstone .jpg", birth: "2000-08-01", height: 177 },
-  { name: "Gems", image: "Gems .jpg", birth: "2004-01-02", height: 170 },
+  { name: "Gems", image: "Gems.jpg", birth: "2004-01-02", height: 170 },
   { name: "JJ", image: "JJ.jpg", birth: "2000-06-24", height: 176 },
   { name: "JT", image: "JT.jpg", birth: "2000-08-29", height: 190 },
   { name: "James", image: "James.jpg", birth: "1999-02-11", height: 179 },
@@ -485,9 +497,8 @@ function createMemberList() {
       "member-choice";
     button.innerHTML = `
       <img
-        src="${member.image}"
+        src="${imagePath(member.image)}"
         alt="${member.name}"
-        onerror="this.style.display='none';"
       >
       <div class="member-choice-name">
         ${member.name}
@@ -606,9 +617,8 @@ function createBingoCard() {
       "false";
     cell.innerHTML = `
       <img
-        src="${member.image}"
+        src="${imagePath(member.image)}"
         alt="${member.name}"
-        onerror="this.style.display='none';"
       >
       <div class="bingo-cell-name">
         ${member.name}
